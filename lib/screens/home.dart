@@ -16,6 +16,7 @@ class _HomePageState extends State<HomePage> {
   late Future<List<Country>> countries;
   String searchQuery = '';
   String sortBy = 'name';
+  bool isAscending = true;
 
   @override
   void initState() {
@@ -53,20 +54,21 @@ class _HomePageState extends State<HomePage> {
             return const Center(child: Text('No countries found'));
           }
           final allCountries = snapshot.data!;
-          // Filter by search
           final filtered = allCountries.where((c) => c.name.toLowerCase().contains(searchQuery.toLowerCase())).toList();
-          // Sort
           filtered.sort((a, b) {
+            int cmp = 0;
             switch (sortBy) {
               case 'name':
-                return a.name.compareTo(b.name);
+                cmp = a.name.compareTo(b.name);
+                break;
               case 'population':
-                return b.population.compareTo(a.population);
+                cmp = a.population.compareTo(b.population);
+                break;
               case 'region':
-                return a.region.compareTo(b.region);
-              default:
-                return 0;
+                cmp = a.region.compareTo(b.region);
+                break;
             }
+            return isAscending ? cmp : -cmp;
           });
           return Column(
             children: [
@@ -100,6 +102,14 @@ class _HomePageState extends State<HomePage> {
                       onChanged: (value) {
                         setState(() {
                           sortBy = value!;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(isAscending ? Icons.arrow_upward : Icons.arrow_downward),
+                      onPressed: () {
+                        setState(() {
+                          isAscending = !isAscending;
                         });
                       },
                     ),
@@ -147,5 +157,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-
