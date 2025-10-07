@@ -15,6 +15,8 @@ class FavoritesPage extends StatefulWidget {
 
 class _FavoritesPageState extends State<FavoritesPage> {
   late Future<List<Country>> countries;
+  String sortBy = 'name';
+  bool isAscending = true;
 
   @override
   void initState() {
@@ -56,37 +58,87 @@ class _FavoritesPageState extends State<FavoritesPage> {
           if (favoriteCountries.isEmpty) {
             return const Center(child: Text('No favorites yet'));
           }
-          return ListView.builder(
-            itemCount: favoriteCountries.length,
-            itemBuilder: (context, i) {
-              final country = favoriteCountries[i];
-              return Card(
-                child: ListTile(
-                  leading: country.flagsPng != null
-                      ? Image.network(country.flagsPng!, width: 50)
-                      : const SizedBox(width: 50),
-                  title: Text(country.name),
-                  subtitle: Text(country.region),
-                  trailing: IconButton(
-                    icon: Icon(
-                      favoritesProvider.isFavorite(country.name) ? Icons.favorite : Icons.favorite_border,
-                      color: favoritesProvider.isFavorite(country.name) ? Colors.red : null,
+          favoriteCountries.sort((a, b) {
+            int cmp = 0;
+            switch (sortBy) {
+              case 'name':
+                cmp = a.name.compareTo(b.name);
+                break;
+              case 'population':
+                cmp = a.population.compareTo(b.population);
+                break;
+              case 'region':
+                cmp = a.region.compareTo(b.region);
+                break;
+            }
+            return isAscending ? cmp : -cmp;
+          });
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  children: [
+                    const Text('Sort by: '),
+                    DropdownButton<String>(
+                      value: sortBy,
+                      items: const [
+                        DropdownMenuItem(value: 'name', child: Text('Name')),
+                        DropdownMenuItem(value: 'population', child: Text('Population')),
+                        DropdownMenuItem(value: 'region', child: Text('Region')),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          sortBy = value!;
+                        });
+                      },
                     ),
-                    onPressed: () {
-                      favoritesProvider.toggleFavorite(country.name);
-                    },
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetailPage(country: country),
+                    IconButton(
+                      icon: Icon(isAscending ? Icons.arrow_upward : Icons.arrow_downward),
+                      onPressed: () {
+                        setState(() {
+                          isAscending = !isAscending;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: favoriteCountries.length,
+                  itemBuilder: (context, i) {
+                    final country = favoriteCountries[i];
+                    return Card(
+                      child: ListTile(
+                        leading: country.flagsPng != null
+                            ? Image.network(country.flagsPng!, width: 50)
+                            : const SizedBox(width: 50),
+                        title: Text(country.name),
+                        subtitle: Text(country.region),
+                        trailing: IconButton(
+                          icon: Icon(
+                            favoritesProvider.isFavorite(country.name) ? Icons.favorite : Icons.favorite_border,
+                            color: favoritesProvider.isFavorite(country.name) ? Colors.red : null,
+                          ),
+                          onPressed: () {
+                            favoritesProvider.toggleFavorite(country.name);
+                          },
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailPage(country: country),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
                 ),
-              );
-            },
+              ),
+            ],
           );
         },
       ),
