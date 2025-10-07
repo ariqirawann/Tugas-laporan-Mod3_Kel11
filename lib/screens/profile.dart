@@ -13,7 +13,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final List<Map<String, String>> teamMembers = [
-    {'Nama': 'Sanggul Rotua Pakpahan', 'NIM': '21120122120018'},
+    {'Nama': 'Ariq Fariz Fakhri Irawan', 'NIM': '21120123130095'},
   ];
 
   @override
